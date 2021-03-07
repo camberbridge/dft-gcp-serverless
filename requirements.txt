@@ -1,0 +1,6 @@
+google-cloud-datastore
+tweepy
+opencv-contrib-python
+opencv-python
+numpy
+requests
