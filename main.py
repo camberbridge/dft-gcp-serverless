@@ -47,21 +47,21 @@ kind = "Twitter_home"
 # The name/ID for the new entity
 name = "latest_tweet_id"
 # The Cloud Datastore key for the new entity
-task_key = datastore_client.key(kind, name)
+entity_key = datastore_client.key(kind, name)
 
 
-def put_datastore(tweet_id):
+def put_latest_tweet_id(tweet_id):
     # Prepare the new entity
-    task = datastore.Entity(key=task_key)
-    task["id"] = tweet_id
-    task["timestamp"] = datetime.datetime.now()
+    entity = datastore.Entity(key=entity_key)
+    entity["id"] = tweet_id
+    entity["timestamp"] = datetime.datetime.now()
 
     # Save the entity
-    datastore_client.put(task)
+    datastore_client.put(entity)
 
 
-def get_datastore():
-    entity = datastore_client.get(key=task_key)
+def get_latest_tweet_id():
+    entity = datastore_client.get(key=entity_key)
     return entity["id"]
 
 
@@ -71,8 +71,8 @@ Detect faces by OpenCV(DNN) with pretrained caffe model
 
 # Pretrained DNN caffe model
 # Ref: https://github.com/spmallick/learnopencv/tree/master/FaceDetectionComparison/models
-PROTOTXT_PATH = './deploy.prototxt'
-WEIGHTS_PATH = './res10_300x300_ssd_iter_140000_fp16.caffemodel'
+PROTOTXT_PATH = "./deploy.prototxt"
+WEIGHTS_PATH = "./res10_300x300_ssd_iter_140000_fp16.caffemodel"
 # Confidence threshold
 CONFIDENCE = 0.9
 
@@ -123,7 +123,7 @@ def main(event, context):
 
     # If latest ID is in Datastore, give since_id for param
     try:
-        timeline = api.home_timeline(since_id=get_datastore(), count=N)
+        timeline = api.home_timeline(since_id=get_latest_tweet_id(), count=N)
     except:
         timeline = api.home_timeline(count=N)
 
@@ -131,7 +131,7 @@ def main(event, context):
         if id_counter == 0:
             latest_t_id = status.id
             # Write latest ID to Datastore
-            put_datastore(latest_t_id)
+            put_latest_tweet_id(latest_t_id)
 
         # Exclude RT
         if not "RT @" in status.text[0:4]:
@@ -142,9 +142,9 @@ def main(event, context):
             print(status.text)
             print(tweet_url)
 
-            if 'media' in status.entities:
-                for media in status.extended_entities['media']:
-                    media_url = media['media_url']
+            if "media" in status.entities:
+                for media in status.extended_entities["media"]:
+                    media_url = media["media_url"]
                     print(media_url)
 
                     # Image (Face) Recognition & do_tweet
